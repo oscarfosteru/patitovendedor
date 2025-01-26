@@ -36,14 +36,14 @@ const ProfilePage = () => {
 
                 if (docSnap.exists()) {
                     const userData = docSnap.data();
-                    console.log("Firestore data:", userData);
+                    console.log("Datos de Firestore:", userData);
                     setFormData({
                         firstName: userData.firstName || "",
                         lastName: userData.lastName || "",
                         birthDate: userData.birthDate?.toDate()?.toLocaleDateString('en-CA') || "",
                         photoPerfil: null,
                     });
-                     setHasBasicInfo(true); //Indica que ya tiene la info basica
+                     setHasBasicInfo(true); //Indica que ya tiene la info básica
                 } else {
                   setHasBasicInfo(false);
                 }
@@ -104,21 +104,21 @@ const ProfilePage = () => {
     };
 
     if (loading) {
-        return <div>Loading...</div>;
+        return <div>Cargando...</div>;
     }
 
     if (!user) {
-        return <div>You are not logged in.</div>;
+        return <div>No has iniciado sesión.</div>;
     }
 
       if (editMode) {
         return (
             <div className="container mx-auto p-4">
-                <h2 className="text-2xl font-bold mb-4">Edit Profile</h2>
+                <h2 className="text-2xl font-bold mb-4">Editar Perfil</h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
                         <label className="block text-gray-700 text-sm font-bold mb-2">
-                            First Name
+                            Nombre
                         </label>
                         <input
                             type="text"
@@ -131,7 +131,7 @@ const ProfilePage = () => {
                     </div>
                     <div>
                         <label className="block text-gray-700 text-sm font-bold mb-2">
-                            Last Name
+                            Apellido
                         </label>
                         <input
                             type="text"
@@ -145,7 +145,7 @@ const ProfilePage = () => {
 
                     <div>
                         <label className="block text-gray-700 text-sm font-bold mb-2">
-                            Birth Date
+                            Fecha de Nacimiento
                         </label>
                         <input
                             type="date"
@@ -158,7 +158,7 @@ const ProfilePage = () => {
                     </div>
                     <div>
                         <label className="block text-gray-700 text-sm font-bold mb-2">
-                            Profile Picture
+                            Foto de Perfil
                         </label>
                         <input
                             type="file"
@@ -175,7 +175,7 @@ const ProfilePage = () => {
                         className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                         disabled={loading}
                     >
-                        {loading ? "Loading..." : "Save Changes"}
+                        {loading ? "Cargando..." : "Guardar Cambios"}
                     </button>
                     <button
                         type="button"
@@ -184,7 +184,7 @@ const ProfilePage = () => {
                             setEditMode(false);
                         }}
                     >
-                        Cancel
+                        Cancelar
                     </button>
                 </form>
             </div>
@@ -193,34 +193,34 @@ const ProfilePage = () => {
 
     return (
       <div className="container mx-auto p-4">
-        <h2 className="text-2xl font-bold mb-4">Profile</h2>
+        <h2 className="text-2xl font-bold mb-4">Perfil</h2>
 
         <div className="flex flex-col md:flex-row items-center md:items-start gap-4">
           <div className="w-full md:w-1/3 flex justify-center">
             {user?.photoURL ? (
               <img
                 src={user.photoURL}
-                alt="Profile Picture"
+                alt="Foto de Perfil"
                 className="rounded-full w-48 h-48 object-cover"
               />
             ) : (
               <div className="rounded-full w-48 h-48 bg-gray-200 flex items-center justify-center text-gray-500">
-                No Photo
+                Sin Foto
               </div>
             )}
           </div>
           <div className="w-full md:w-2/3">
             <p>
-              <span className="font-bold">First Name:</span> {formData.firstName}
+              <span className="font-bold">Nombre:</span> {formData.firstName}
             </p>
             <p>
-              <span className="font-bold">Last Name:</span> {formData.lastName}
+              <span className="font-bold">Apellido:</span> {formData.lastName}
             </p>
             <p>
-              <span className="font-bold">Email:</span> {user.email}
+              <span className="font-bold">Correo Electrónico:</span> {user.email}
             </p>
               <p>
-                <span className="font-bold">Birth Date:</span> {formData.birthDate}
+                <span className="font-bold">Fecha de Nacimiento:</span> {formData.birthDate}
             </p>
             <button
               type="button"
@@ -229,7 +229,7 @@ const ProfilePage = () => {
                   setEditMode(true)
               }}
             >
-              Edit Photo
+              Editar Foto
             </button>
           </div>
         </div>
