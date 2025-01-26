@@ -17,6 +17,7 @@ const LoginPage = () => {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
             console.log("Usuario autenticado:", user);
+            router.push("/perfil"); // Redirigir a la página de perfil
         } catch (error) {
             console.error("Error al iniciar sesión:", error);
             alert(`Error al iniciar sesión: ${error.message}`);

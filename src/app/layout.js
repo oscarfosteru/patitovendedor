@@ -19,12 +19,30 @@ export default function RootLayout({ children }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, user => {
-      if (!user && pathname !== '/login') {
+      if (!user && pathname !== '/login' && pathname !== '/' && pathname !== '/crear-cuenta') {
+      router.push("/login");
+      }
+    });
+    return () => unsubscribe();
+  }, [pathname, router]);
+
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, user => {
+      setUser(user);
+      if (!user && pathname !== '/login' && pathname !== '/' && pathname !== '/crear-cuenta') {
         router.push("/login");
       }
     });
     return () => unsubscribe();
   }, [pathname, router]);
+
+  const handleSignOut = () => {
+    auth.signOut().then(() => {
+      router.push("/login");
+    });
+  };
 
   return (
     <html lang="es">
@@ -36,15 +54,19 @@ export default function RootLayout({ children }) {
             </Link>
             <span>Sunflowext</span>
           </div>
-          <button onClick={() => setOpenNav(!openNav)}>
+          <div onClick={() => setOpenNav(!openNav)} className="nav-toggle">
             {openNav ? <XMarkIcon className="h-6 w-6" /> : <Bars3Icon className="h-6 w-6" />}
-          </button>
+          </div>
           <div className={`navbar-collapse ${openNav ? 'block' : 'hidden'}`}>
             <ul>
-              <li><Link href="/crear-cuenta">Crear Cuenta</Link></li>
-              <li><Link href="/"> Inicio</Link></li>
-              <li><Link href="/perfil"> Perfil</Link></li>
-              <li><Link href="/login">Iniciar Sesión</Link></li>
+              {!user && <li><Link href="/crear-cuenta">Crear Cuenta</Link></li>}
+              <li><Link href="/">Inicio</Link></li>
+              <li><Link href="/perfil">Perfil</Link></li>
+              {user ? (
+                <li><a onClick={handleSignOut}>Cerrar Sesión</a></li>
+              ) : (
+                <li><Link href="/login">Iniciar Sesión</Link></li>
+              )}
             </ul>
           </div>
         </nav>
@@ -81,12 +103,10 @@ export default function RootLayout({ children }) {
             color:rgb(255, 204, 122);
           }
 
-          .navbar button {
-            background: transparent;
-            border: none;
-            color:white;
+          .nav-toggle {
+            cursor: pointer;
+            color: white;
             font-size: 1.5rem;
-            border
           }
 
           .navbar-collapse {
@@ -111,15 +131,18 @@ export default function RootLayout({ children }) {
             margin-bottom: 1rem;
           }
 
-          .navbar-collapse li a {
+          .navbar-collapse li a, .navbar-collapse li a {
             text-decoration: none;
             color: white;
             display: flex;
             align-items: center;
             transition: color 0.3s ease;
+            background: none;
+            border: none;
+            cursor: pointer;
           }
 
-          .navbar-collapse li a:hover {
+          .navbar-collapse li a:hover, .navbar-collapse li a:hover {
             color: #bfe0ed; /* hover:text-pink-400 */
           }
 

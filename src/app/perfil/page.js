@@ -43,9 +43,9 @@ const ProfilePage = () => {
                         birthDate: userData.birthDate?.toDate()?.toLocaleDateString('en-CA') || "",
                         photoPerfil: null,
                     });
-                     setHasBasicInfo(true); //Indica que ya tiene la info básica
+                    setHasBasicInfo(true); //Indica que ya tiene la info básica
                 } else {
-                  setHasBasicInfo(false);
+                    setHasBasicInfo(false);
                 }
             }
             setLoading(false);
@@ -62,12 +62,10 @@ const ProfilePage = () => {
         }
     };
 
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         try {
-
             // 2. Subir foto de perfil a Firebase Storage (si hay)
             let profileImageUrl = null;
             if (formData.photoPerfil) {
@@ -92,9 +90,7 @@ const ProfilePage = () => {
 
             await setDoc(doc(db, "users", user.uid), userDoc);
 
-
             setEditMode(false);
-
         } catch (error) {
             console.error("Error al actualizar el perfil:", error);
             alert(`Error al actualizar el perfil: ${error.message}`);
@@ -102,6 +98,18 @@ const ProfilePage = () => {
             setLoading(false);
         }
     };
+
+    const today = new Date();
+      let birthDate = null;
+      let isBirthday = false;
+
+     if (formData.birthDate){
+         birthDate = new Date(formData.birthDate);
+         isBirthday = birthDate.getDate() === today.getDate() && birthDate.getMonth() === today.getMonth();
+     }
+
+
+
 
     if (loading) {
         return <div>Cargando...</div>;
@@ -111,13 +119,13 @@ const ProfilePage = () => {
         return <div>No has iniciado sesión.</div>;
     }
 
-      if (editMode) {
+    if (editMode) {
         return (
-            <div className="container mx-auto p-4">
-                <h2 className="text-2xl font-bold mb-4">Editar Perfil</h2>
+            <div className="container mx-auto p-6 bg-pink-100 rounded-lg shadow-lg">
+                <h2 className="text-3xl font-bold text-center text-pink-600 mb-4">Editar Perfil</h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <label className="block text-gray-700 text-sm font-bold mb-2">
+                        <label className="block text-pink-600 font-medium mb-2">
                             Nombre
                         </label>
                         <input
@@ -125,12 +133,12 @@ const ProfilePage = () => {
                             name="firstName"
                             value={formData.firstName}
                             onChange={handleChange}
-                            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            className="shadow-lg border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                             required
                         />
                     </div>
                     <div>
-                        <label className="block text-gray-700 text-sm font-bold mb-2">
+                        <label className="block text-pink-600 font-medium mb-2">
                             Apellido
                         </label>
                         <input
@@ -138,13 +146,13 @@ const ProfilePage = () => {
                             name="lastName"
                             value={formData.lastName}
                             onChange={handleChange}
-                            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            className="shadow-lg border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                             required
                         />
                     </div>
 
                     <div>
-                        <label className="block text-gray-700 text-sm font-bold mb-2">
+                        <label className="block text-pink-600 font-medium mb-2">
                             Fecha de Nacimiento
                         </label>
                         <input
@@ -152,12 +160,12 @@ const ProfilePage = () => {
                             name="birthDate"
                             value={formData.birthDate}
                             onChange={handleChange}
-                            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            className="shadow-lg border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                             required
                         />
                     </div>
                     <div>
-                        <label className="block text-gray-700 text-sm font-bold mb-2">
+                        <label className="block text-pink-600 font-medium mb-2">
                             Foto de Perfil
                         </label>
                         <input
@@ -165,14 +173,14 @@ const ProfilePage = () => {
                             name="photoPerfil"
                             accept="image/*"
                             onChange={handleChange}
-                            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            className="shadow-lg border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                             required
                         />
                     </div>
 
                     <button
                         type="submit"
-                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                        className="bg-pink-500 hover:bg-pink-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full"
                         disabled={loading}
                     >
                         {loading ? "Cargando..." : "Guardar Cambios"}
@@ -192,8 +200,8 @@ const ProfilePage = () => {
     }
 
     return (
-      <div className="container mx-auto p-4">
-        <h2 className="text-2xl font-bold mb-4">Perfil</h2>
+      <div className="container mx-auto p-6 bg-pink-100 rounded-lg shadow-lg">
+        <h2 className="text-3xl font-bold text-center text-pink-600 mb-4">Perfil</h2>
 
         <div className="flex flex-col md:flex-row items-center md:items-start gap-4">
           <div className="w-full md:w-1/3 flex justify-center">
@@ -211,25 +219,31 @@ const ProfilePage = () => {
           </div>
           <div className="w-full md:w-2/3">
             <p>
-              <span className="font-bold">Nombre:</span> {formData.firstName}
+              <span className="font-bold text-pink-600">Nombre:</span> {formData.firstName}
             </p>
             <p>
-              <span className="font-bold">Apellido:</span> {formData.lastName}
+              <span className="font-bold text-pink-600">Apellido:</span> {formData.lastName}
             </p>
             <p>
-              <span className="font-bold">Correo Electrónico:</span> {user.email}
+              <span className="font-bold text-pink-600">Correo Electrónico:</span> {user.email}
             </p>
               <p>
-                <span className="font-bold">Fecha de Nacimiento:</span> {formData.birthDate}
-            </p>
+                  <span className="font-bold text-pink-600">Fecha de Nacimiento:</span> {formData.birthDate}
+              </p>
+
+
+              {isBirthday && (
+                  <p className="text-xl font-bold text-pink-500 mt-4">¡Feliz Cumpleaños! 🎉</p>
+              )}
+
             <button
               type="button"
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mt-4"
+              className="bg-pink-500 hover:bg-pink-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mt-4"
               onClick={() => {
-                  setEditMode(true)
+                setEditMode(true);
               }}
             >
-              Editar Foto
+              Editar Perfil
             </button>
           </div>
         </div>
