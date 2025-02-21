@@ -7,9 +7,10 @@ import {
     doc,
     getDoc,
     setDoc,
+    Timestamp
 } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { Timestamp } from "firebase/firestore";
+import Link from "next/link";
 
 const db = getFirestore();
 const storage = getStorage();
@@ -24,28 +25,25 @@ const ProfilePage = () => {
         birthDate: "",
         photoPerfil: null,
     });
-    const [hasBasicInfo, setHasBasicInfo] = useState(false);
+    const [userRole, setUserRole] = useState("user");
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             setUser(user);
             if (user) {
-                // Obtener datos adicionales de Firestore
                 const docRef = doc(db, "users", user.uid);
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
                     const userData = docSnap.data();
-                    console.log("Datos de Firestore:", userData);
+                    const birthDate = userData.birthDate ? userData.birthDate.toDate().toLocaleDateString('en-CA') : "";
                     setFormData({
                         firstName: userData.firstName || "",
                         lastName: userData.lastName || "",
-                        birthDate: userData.birthDate?.toDate()?.toLocaleDateString('en-CA') || "",
+                        birthDate: birthDate,
                         photoPerfil: null,
                     });
-                    setHasBasicInfo(true); //Indica que ya tiene la info básica
-                } else {
-                    setHasBasicInfo(false);
+                    setUserRole(userData.role || "user");
                 }
             }
             setLoading(false);
@@ -55,10 +53,11 @@ const ProfilePage = () => {
 
     const handleChange = (e) => {
         const { name, value, type } = e.target;
+
         if (type === "file") {
-            setFormData({ ...formData, photoPerfil: e.target.files[0] });
+            setFormData(prevFormData => ({ ...prevFormData, photoPerfil: e.target.files[0] }));
         } else {
-            setFormData({ ...formData, [name]: value });
+            setFormData(prevFormData => ({ ...prevFormData, [name]: value }));
         }
     };
 
@@ -66,62 +65,69 @@ const ProfilePage = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            // 2. Subir foto de perfil a Firebase Storage (si hay)
-            let profileImageUrl = null;
+            let profileImageUrl = user.photoURL;
+
             if (formData.photoPerfil) {
-                const storageRef = ref(storage, `/profileImages/${user.uid}`);
+                const storageRef = ref(storage, `profileImages/${user.uid}`);
                 const snapshot = await uploadBytes(storageRef, formData.photoPerfil);
                 profileImageUrl = await getDownloadURL(snapshot.ref);
             }
-            // 3. Actualizar el perfil de Auth
+
             await updateProfile(user, {
                 displayName: `${formData.firstName} ${formData.lastName}`,
-                photoURL: profileImageUrl || null
+                photoURL: profileImageUrl
             });
-            // 4. Guardar datos del usuario en Firestore
-            const birthDate = formData.birthDate ? Timestamp.fromDate(new Date(formData.birthDate)) : null;
+
+            const birthDate = formData.birthDate
+                ? Timestamp.fromDate(new Date(formData.birthDate + 'T00:00:00'))
+                : null;
+
             const userDoc = {
                 firstName: formData.firstName,
                 lastName: formData.lastName,
                 birthDate: birthDate,
-                photoURL: profileImageUrl || null,
-                role: "user" // Rol por defecto
+                photoURL: profileImageUrl,
+                role: userRole // Keep the current role
             };
 
             await setDoc(doc(db, "users", user.uid), userDoc);
 
             setEditMode(false);
         } catch (error) {
-            console.error("Error al actualizar el perfil:", error);
-            alert(`Error al actualizar el perfil: ${error.message}`);
+            console.error("Error updating profile:", error);
+            alert(`Error updating profile: ${error.message}`);
         } finally {
             setLoading(false);
         }
     };
 
     const today = new Date();
-      let birthDate = null;
-      let isBirthday = false;
+    const birthDate = formData.birthDate ? new Date(formData.birthDate) : null;
 
-     if (formData.birthDate){
-         birthDate = new Date(formData.birthDate);
-         isBirthday = birthDate.getDate() === today.getDate() && birthDate.getMonth() === today.getMonth();
-     }
-
-
-
+    const isBirthday = birthDate &&
+        today.getUTCDate() === birthDate.getUTCDate() &&
+        today.getUTCMonth() === birthDate.getUTCMonth();
 
     if (loading) {
         return <div>Cargando...</div>;
     }
 
     if (!user) {
-        return <div>No has iniciado sesión.</div>;
+        return (
+             <div className="flex justify-center items-center py-8">
+              <div className="container mx-auto p-6 bg-pink-100 rounded-lg shadow-lg">
+                <p>
+                    Debes <Link href="/login" className="text-blue-500">iniciar sesión</Link> para ver tu perfil.
+                </p>
+               </div>
+            </div>
+        )
     }
 
     if (editMode) {
         return (
-            <div className="container mx-auto p-6 bg-pink-100 rounded-lg shadow-lg">
+            <div className="flex justify-center items-center py-8">
+               <div className="container mx-auto p-6 bg-white rounded-lg shadow-lg max-w-md">
                 <h2 className="text-3xl font-bold text-center text-pink-600 mb-4">Editar Perfil</h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
@@ -174,7 +180,7 @@ const ProfilePage = () => {
                             accept="image/*"
                             onChange={handleChange}
                             className="shadow-lg border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                            required
+
                         />
                     </div>
 
@@ -196,58 +202,63 @@ const ProfilePage = () => {
                     </button>
                 </form>
             </div>
+           </div>
         );
     }
 
     return (
-      <div className="container mx-auto p-6 bg-pink-100 rounded-lg shadow-lg">
-        <h2 className="text-3xl font-bold text-center text-pink-600 mb-4">Perfil</h2>
+          <div className="flex justify-center items-center py-12">
+              <div className="container mx-auto p-4 md:p-6 bg-white rounded-lg shadow-lg max-w-md">
+            <h2 className="text-3xl font-bold text-center text-pink-600 mb-4">Perfil</h2>
 
-        <div className="flex flex-col md:flex-row items-center md:items-start gap-4">
-          <div className="w-full md:w-1/3 flex justify-center">
-            {user?.photoURL ? (
-              <img
-                src={user.photoURL}
-                alt="Foto de Perfil"
-                className="rounded-full w-48 h-48 object-cover"
-              />
-            ) : (
-              <div className="rounded-full w-48 h-48 bg-gray-200 flex items-center justify-center text-gray-500">
-                Sin Foto
-              </div>
-            )}
-          </div>
-          <div className="w-full md:w-2/3">
-            <p>
-              <span className="font-bold text-pink-600">Nombre:</span> {formData.firstName}
-            </p>
-            <p>
-              <span className="font-bold text-pink-600">Apellido:</span> {formData.lastName}
-            </p>
-            <p>
-              <span className="font-bold text-pink-600">Correo Electrónico:</span> {user.email}
-            </p>
-              <p>
-                  <span className="font-bold text-pink-600">Fecha de Nacimiento:</span> {formData.birthDate}
-              </p>
+            <div className="flex flex-col items-center gap-4">
+                <div className="w-48 h-48 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
+                    {user?.photoURL ? (
+                        <img
+                            src={user.photoURL}
+                            alt="Foto de Perfil"
+                            className="w-full h-full object-cover"
+                        />
+                    ) : (
+                         <p className="text-gray-500">Sin foto</p>
+                    )}
+                </div>
+
+                <div className="w-full text-center">
+                     <p className="mb-2">
+                         <span className="font-bold text-pink-600">Nombre:</span> {formData.firstName}
+                    </p>
+                    <p className="mb-2">
+                         <span className="font-bold text-pink-600">Apellido:</span> {formData.lastName}
+                    </p>
+                    <p className="mb-2">
+                         <span className="font-bold text-pink-600">Correo Electrónico:</span> {user.email}
+                    </p>
+                    <p className="mb-2">
+                        <span className="font-bold text-pink-600">Fecha de Nacimiento:</span> {formData.birthDate}
+                    </p>
 
 
-              {isBirthday && (
-                  <p className="text-xl font-bold text-pink-500 mt-4">¡Feliz Cumpleaños! 🎉</p>
-              )}
+                    {isBirthday && (
+                        <div className="bg-pink-200 p-4 rounded-md mt-4 text-center">
+                            <p className="text-xl font-bold text-pink-700">¡Feliz Cumpleaños! 🎉</p>
+                            <p className="text-pink-600">Que tengas un día maravilloso.</p>
+                        </div>
+                    )}
 
-            <button
-              type="button"
-              className="bg-pink-500 hover:bg-pink-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mt-4"
-              onClick={() => {
-                setEditMode(true);
-              }}
-            >
-              Editar Perfil
-            </button>
-          </div>
+                    <button
+                        type="button"
+                        className="bg-pink-500 hover:bg-pink-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mt-4"
+                        onClick={() => {
+                            setEditMode(true);
+                        }}
+                    >
+                        Editar Perfil
+                    </button>
+                </div>
+            </div>
         </div>
-      </div>
+          </div>
     );
 };
 

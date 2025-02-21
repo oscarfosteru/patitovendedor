@@ -8,71 +8,71 @@ import { auth } from '../../firebase';
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import logo from '../../public/assets/logo.png';
-import { Bars3Icon, XMarkIcon, UserIcon, HomeIcon, UserPlusIcon } from '@heroicons/react/24/outline';
+import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 
 const inter = Inter({ subsets: ['latin'] });
 
 export default function RootLayout({ children }) {
-  const pathname = usePathname();
-  const router = useRouter();
-  const [openNav, setOpenNav] = useState(false);
+    const pathname = usePathname();
+    const router = useRouter();
+    const [openNav, setOpenNav] = useState(false);
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, user => {
-      if (!user && pathname !== '/login' && pathname !== '/' && pathname !== '/crear-cuenta') {
-      router.push("/login");
-      }
-    });
-    return () => unsubscribe();
-  }, [pathname, router]);
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, user => {
+            if (!user && pathname !== '/login' && pathname !== '/' && pathname !== '/crear-cuenta') {
+                router.push("/login");
+            }
+        });
+        return () => unsubscribe();
+    }, [pathname, router]);
 
-  const [user, setUser] = useState(null);
+    const [user, setUser] = useState(null);
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, user => {
-      setUser(user);
-      if (!user && pathname !== '/login' && pathname !== '/' && pathname !== '/crear-cuenta') {
-        router.push("/login");
-      }
-    });
-    return () => unsubscribe();
-  }, [pathname, router]);
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, user => {
+            setUser(user);
+            if (!user && pathname !== '/login' && pathname !== '/' && pathname !== '/crear-cuenta') {
+                router.push("/login");
+            }
+        });
+        return () => unsubscribe();
+    }, [pathname, router]);
 
-  const handleSignOut = () => {
-    auth.signOut().then(() => {
-      router.push("/login");
-    });
-  };
+    const handleSignOut = () => {
+        auth.signOut().then(() => {
+            router.push("/login");
+        });
+    };
 
-  return (
-    <html lang="es">
-      <body className={`${inter.className} bg-pink-50`}>
-        <nav className="navbar">
-          <div className="logo">
-            <Link href="/">
-              <Image src={logo} alt="Patito Vendedor" width={60} height={60} />
-            </Link>
-            <span>Sunflowext</span>
-          </div>
-          <div onClick={() => setOpenNav(!openNav)} className="nav-toggle">
-            {openNav ? <XMarkIcon className="h-6 w-6" /> : <Bars3Icon className="h-6 w-6" />}
-          </div>
-          <div className={`navbar-collapse ${openNav ? 'block' : 'hidden'}`}>
-            <ul>
-              {!user && <li><Link href="/crear-cuenta">Crear Cuenta</Link></li>}
-              <li><Link href="/">Inicio</Link></li>
-              <li><Link href="/perfil">Perfil</Link></li>
-              {user ? (
-                <li><a onClick={handleSignOut}>Cerrar Sesión</a></li>
-              ) : (
-                <li><Link href="/login">Iniciar Sesión</Link></li>
-              )}
-            </ul>
-          </div>
-        </nav>
-        <main className="container mx-auto p-4">{children}</main>
+    return (
+        <html lang="es">
+            <body className={`${inter.className} bg-pink-50`}>
+                <nav className="navbar">
+                    <div className="logo">
+                        <Link href="/">
+                            <Image src={logo} alt="Patito Vendedor" width={60} height={60} />
+                        </Link>
+                        <span>Sunflowext</span>
+                    </div>
+                    <div onClick={() => setOpenNav(!openNav)} className="nav-toggle">
+                        {openNav ? <XMarkIcon className="h-6 w-6" /> : <Bars3Icon className="h-6 w-6" />}
+                    </div>
+                    <div className={`navbar-collapse ${openNav ? 'block' : 'hidden'}`}>
+                        <ul>
+                            {!user && <li><Link href="/crear-cuenta">Crear Cuenta</Link></li>}
+                            <li><Link href="/">Inicio</Link></li>
+                            <li><Link href="/perfil">Perfil</Link></li>
+                            {user ? (
+                                <li><a onClick={handleSignOut}>Cerrar Sesión</a></li>
+                            ) : (
+                                <li><Link href="/login">Iniciar Sesión</Link></li>
+                            )}
+                        </ul>
+                    </div>
+                </nav>
+                <main className="container mx-auto p-4">{children}</main>
 
-        <style jsx>{`
+                <style jsx>{`
           body {
             font-family: 'Inter', sans-serif;
             background-color: #fce7f3; /* bg-pink-50 */
@@ -82,7 +82,7 @@ export default function RootLayout({ children }) {
           .navbar {
             display: flex;
             justify-content: space-between;
-            align-items: center; 
+            align-items: center;
             height: 10vh;
             background: linear-gradient(to right, #bfe0ed, #bfe0ed); /* bg-gradient-to-r from-pink-300 to-purple-300 */
             padding: 0.5rem 1rem;
@@ -156,7 +156,7 @@ export default function RootLayout({ children }) {
             }
           }
         `}</style>
-      </body>
-    </html>
-  );
+            </body>
+        </html>
+    );
 }
